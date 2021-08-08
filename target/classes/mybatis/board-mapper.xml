@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper  namespace="boardMapper">
+
+	<select id="listCount" parameterType="int" resultType="int">
+		SELECT COUNT(*) FROM POST
+		WHERE BOARD_ID = #{board_id}
+		AND POST_DELFLAG = 'N'
+	</select>
+	
+	<select id="selectList" parameterType="int" resultType="postDto">
+		SELECT POST_ID, BOARD_ID, POST_NO, POST_CATEGORY, POST_WRITER, POST_TITLE, POST_CONTENT, POST_REGDATE,
+		POST_HIT, POST_COMMENT_COUNT, POST_DELFLAG, ORIGINNAME, CHANGENAME
+		FROM POST
+		WHERE BOARD_ID = #{board_id}
+		AND POST_DELFLAG = 'N'
+		ORDER BY POST_NO DESC
+	</select>
+
+	<select id="selectOne" parameterType="int" resultType="postDto">
+		SELECT POST_ID, BOARD_ID, POST_NO, POST_CATEGORY, POST_WRITER, POST_TITLE, POST_CONTENT, POST_REGDATE,
+		POST_HIT, POST_COMMENT_COUNT, POST_DELFLAG, ORIGINNAME, CHANGENAME
+		FROM POST
+		WHERE POST_ID = #{post_id}
+	</select>
+	
+	<update id="increaseCount" parameterType="int">
+		UPDATE POST
+		SET POST_HIT = POST_HIT + 1
+		WHERE POST_ID = #{post_id}
+	</update>
+	
+	<insert id="insertNotice" parameterType="postDto">
+		INSERT INTO POST
+		VALUES(
+		POSTSEQ.NEXTVAL,
+		0,
+		NOTICESEQ.NEXTVAL,
+		NULL,
+		#{post_writer},
+		#{post_title},
+		#{post_content},
+		SYSDATE,
+		0, 0, 'N', #{originName}, #{changeName}
+		)
+	</insert>
+	
+	<insert id="insertQNA" parameterType="postDto">
+		INSERT INTO POST
+		VALUES(
+		POSTSEQ.NEXTVAL,
+		1,
+		QNASEQ.NEXTVAL,
+		#{post_category},
+		#{post_writer},
+		#{post_title},
+		#{post_content},
+		SYSDATE,
+		0, 0, 'N', #{originName}, #{changeName}
+		)
+	</insert>
+	
+	<update id="updateBoard" parameterType="postDto">
+		UPDATE POST
+		SET POST_TITLE = #{post_title},
+		POST_CONTENT = #{post_content},
+		ORIGINNAME = #{originName},
+		CHANGENAME = #{changeName}
+		WHERE POST_ID = #{post_id}
+	</update>
+	
+	<update id="deleteBoard" parameterType="int">
+		UPDATE POST
+		SET POST_DELFLAG = 'Y'
+		WHERE POST_ID = #{post_id}
+	</update>
+	
+	<update id="allCommentDelete" parameterType="int">
+		UPDATE REPLY
+		SET COMMENT_DELFLAG = 'Y'
+		WHERE POST_ID = #{post_id}
+	</update>
+	
+	<select id="selectCommentList" parameterType="int" resultType="commentDto">
+		SELECT COMMENT_ID, POST_ID, COMMENT_GROUPNO, COMMENT_GROUPSEQ, COMMENT_CONTENT, COMMENT_WRITER, COMMENT_REGDATE, COMMENT_TITLETAB, COMMENT_DELFLAG
+		FROM REPLY
+		WHERE POST_ID = #{post_id}
+		AND COMMENT_DELFLAG = 'N'
+		ORDER BY COMMENT_GROUPNO DESC, COMMENT_GROUPSEQ
+	</select>
+	
+	<insert id="insertComment" parameterType="commentDto">
+		INSERT INTO REPLY
+		VALUES(REPLYSEQ.NEXTVAL, #{post_id}, COMMENT_GROUPNOSEQ.NEXTVAL, 1, #{comment_content}, #{comment_writer}, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI'), 0, 'N' )
+	</insert>
+	
+	<update id="answerCommentUpdate" parameterType="int">
+		UPDATE REPLY
+		SET COMMENT_GROUPSEQ = COMMENT_GROUPSEQ + 1
+		WHERE COMMENT_GROUPNO = (SELECT COMMENT_GROUPNO FROM REPLY WHERE COMMENT_ID = #{comment_id})
+		AND COMMENT_GROUPSEQ > (SELECT COMMENT_GROUPSEQ FROM REPLY WHERE COMMENT_ID = #{comment_id})
+		AND POST_ID = (SELECT POST_ID FROM REPLY WHERE COMMENT_ID = #{comment_id})
+	</update>
+	
+	<insert id="answerCommentInsert" parameterType="commentDto">
+		INSERT INTO REPLY
+		VALUES(REPLYSEQ.NEXTVAL, #{post_id}, (SELECT COMMENT_GROUPNO FROM REPLY WHERE COMMENT_ID = #{comment_id}), (SELECT COMMENT_GROUPSEQ + 1 FROM REPLY WHERE COMMENT_ID = #{comment_id}),
+			   #{comment_content}, #{comment_writer}, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI'), (SELECT COMMENT_TITLETAB + 1 FROM REPLY WHERE COMMENT_ID = #{comment_id}), 'N')
+	</insert>
+
+	<update id="increaseComment" parameterType="int">
+		UPDATE POST
+		SET POST_COMMENT_COUNT = POST_COMMENT_COUNT + 1
+		WHERE POST_ID = #{post_id}
+	</update>
+	
+	<update id="updateComment" parameterType="commentDto">
+		UPDATE REPLY
+		SET COMMENT_CONTENT = #{comment_content},
+		COMMENT_REGDATE = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI') 
+		WHERE COMMENT_ID = #{comment_id}
+	</update>
+	
+	<update id="deleteComment" parameterType="int">
+		UPDATE REPLY
+		SET COMMENT_DELFLAG = 'Y'
+		WHERE COMMENT_ID = #{comment_id}
+	</update>
+	
+	<update id="decreaseComment" parameterType="int">
+		UPDATE POST
+		SET POST_COMMENT_COUNT = POST_COMMENT_COUNT - 1
+		WHERE POST_ID = #{post_id}
+	</update>
+	
+	<!-- 검색결과에 해당하는 게시글 조회용 쿼리문 -->
+	<select id="selectSearchList" parameterType="map" resultType="postDto">
+		SELECT POST_ID, BOARD_ID, POST_NO, POST_CATEGORY, POST_WRITER, POST_TITLE, POST_CONTENT, POST_REGDATE,
+		POST_HIT, POST_COMMENT_COUNT, POST_DELFLAG, ORIGINNAME, CHANGENAME
+		FROM POST
+		WHERE POST_DELFLAG = 'N'
+		<choose>
+			<when test="board_id == 0">
+				AND BOARD_ID = 0
+			</when>
+			<otherwise>
+				AND BOARD_ID = 1
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="condition == 'title'">
+				AND POST_TITLE
+			</when>
+			<when test="condition == 'writer'">
+				AND POST_WRITER
+			</when>
+			<otherwise>
+				AND POST_CONTENT
+			</otherwise>
+		</choose>
+		LIKE '%' || #{keyword} || '%'
+		<if test='category == "P"'>
+			AND POST_CATEGORY = 'P'
+		</if>
+		<if test='category == "R"'>
+			AND POST_CATEGORY = 'R'
+		</if>
+		<if test='category == "M"'>
+			AND POST_CATEGORY = 'M'
+		</if>
+		<if test='category == "E"'>
+			AND POST_CATEGORY = 'E'
+		</if>
+		ORDER BY POST_NO DESC
+	</select>
+	
+	<select id="selectSearchCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM POST
+		WHERE POST_DELFLAG = 'N'
+		<choose>
+			<when test="board_id == 0">
+				AND BOARD_ID = 0
+			</when>
+			<otherwise>
+				AND BOARD_ID = 1
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="condition == 'title'">
+				AND POST_TITLE
+			</when>
+			<when test="condition == 'writer'">
+				AND POST_WRITER
+			</when>
+			<otherwise>
+				AND POST_CONTENT
+			</otherwise>
+		</choose>
+		LIKE '%' || #{keyword} || '%'
+		<if test='category == "P"'>
+			AND POST_CATEGORY = 'P'
+		</if>
+		<if test='category == "R"'>
+			AND POST_CATEGORY = 'R'
+		</if>
+		<if test='category == "M"'>
+			AND POST_CATEGORY = 'M'
+		</if>
+		<if test='category == "E"'>
+			AND POST_CATEGORY = 'E'
+		</if>
+	</select>
+	
+	
+</mapper>

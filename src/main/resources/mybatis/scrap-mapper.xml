@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="scrap">
+
+	<select id="scselectlist" parameterType="String" resultType="scrapDto">
+	SELECT SCRAP_NO,BOOK_ISBN,SCRAP_REGDATE,BOOK_TITLE,BOOK_COVERLARGEURL,BOOK_AUTHOR,BOOK_CATEGORYID
+	FROM MEMBER INNER JOIN SCRAP
+	ON MEMBER.MEMBER_ID = SCRAP.SCRAP_ID
+	WHERE MEMBER_ID = #{scrap_id}
+	ORDER BY SCRAP_NO DESC
+	</select>
+	
+	<select id="scselectone" parameterType="String" resultType="scrapDto">
+	SELECT SCRAP_NO,BOOK_ISBN,SCRAP_REGDATE,BOOK_TITLE,BOOK_COVERLARGEURL,BOOK_AUTHOR,BOOK_CATEGORYID
+	FROM SCRAP
+	WHERE BOOK_ISBN =#{book_isbn} 
+	</select>
+
+	<select id="scidlist" parameterType="String" resultType="scrapDto">
+		SELECT SCRAP_ID
+		FROM SCRAP
+		WHERE BOOK_ISBN =#{book_isbn}
+	</select>
+	
+	<insert id="scinsert" parameterType="scrapDto">
+		INSERT INTO SCRAP
+		VALUES(SCRAP_NO.NEXTVAL,#{scrap_id},#{book_isbn},SYSDATE,#{book_title},#{book_coverLargeUrl},#{book_author},#{book_categoryId})
+	</insert>
+	
+	<delete id="scdelete" parameterType="int">
+		DELETE FROM SCRAP
+		WHERE SCRAP_NO= #{scrap_no}
+	</delete>
+	<delete id="scalldelete">
+		DELETE FROM SCRAP
+		WHERE SCRAP_NO= #{scrap_no}
+	</delete>
+	
+	
+</mapper>

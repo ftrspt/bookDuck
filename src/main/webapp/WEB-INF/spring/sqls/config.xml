@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd" >
+<configuration>
+
+	<!-- null 값 설정 -->
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL" />
+	</settings>
+	
+	<typeAliases>
+		<typeAlias type="com.spring.bookduck.model.dto.MemberDto" alias="Ldto"/>
+		<typeAlias type="com.spring.bookduck.classify.dto.AireDto" alias="AireDto"/>
+		<typeAlias type="com.spring.bookduck.classify.dto.BlistDto" alias="BlistDto"/>
+		<typeAlias type="com.spring.bookduck.model.dto.PostDto" alias="postDto"/>
+		<typeAlias type="com.spring.bookduck.introduce.dto.IntroduceDto" alias="intdDto"/>
+		<typeAlias type="com.spring.bookduck.model.dto.CommentDto" alias="commentDto"/>
+		<typeAlias type="com.spring.bookduck.model.dto.ReadingChartDto" alias="ReadingChartDto"/>
+		<typeAlias type="com.spring.bookduck.pay.dto.PayDto" alias="payDto"/>
+		<typeAlias type="com.spring.bookduck.scrap.dto.ScrapDto" alias="scrapDto"/>
+		<typeAlias type="com.spring.bookduck.rcvideo.dto.RcvideoDto" alias="rcvideoDto"/>
+		<typeAlias type="com.spring.bookduck.bookfm.dto.BookFMDto" alias="BookFMDto"/>
+		<typeAlias type="com.spring.bookduck.bookstar.dto.BookStarDto" alias="BookStarDto"/>
+		<typeAlias type="com.spring.bookduck.rcimg.dto.RcimgDto" alias="rcimgDto"/>
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="/mybatis/login-mapper.xml"></mapper>
+		<mapper resource="/mybatis/classify-mapper.xml"></mapper>
+		<mapper resource="/mybatis/board-mapper.xml"/>
+		<mapper resource="/mybatis/pay-mapper.xml"/>
+		<mapper resource="/mybatis/introduce-mapper.xml"/>
+		<mapper resource="/mybatis/readingChart-mapper.xml"/>
+		<mapper resource="/mybatis/scrap-mapper.xml"/>
+		<mapper resource="/mybatis/rcvideo-mapper.xml"/>
+		<mapper resource="/mybatis/bookfm-mapper.xml"/>
+		<mapper resource="/mybatis/bookstar-mapper.xml"/>
+		<mapper resource="/mybatis/rcimg-mapper.xml"/>
+	</mappers>
+	
+</configuration>
